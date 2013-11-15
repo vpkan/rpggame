@@ -1,7 +1,7 @@
 /**
  *
  * Author:
- *	zzw <oldj.wu@gmail.com>
+ *	zzw <zzw1986@gmail.com>
  *
  * File: td-obj-building.js
  *

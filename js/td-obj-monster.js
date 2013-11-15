@@ -1,7 +1,7 @@
 /**
  *
  * Author:
- *	zzw <oldj.wu@gmail.com>
+ *	zzw <zzw1986@gmail.com>
  *
  * File: td-obj-monster.js
  *
@@ -66,8 +66,9 @@ _TD.a.push(function (TD) {
 			this.target=null;
 			this.is_weapon = true;
 			this.see_range=160;//视野
-			this.range=60;//攻击范围
+			this.range=40;//攻击范围
 			this.is_blocked = false; // 前进的道路是否被阻塞了
+			this.is_in_attack_range=false;
 		},
 		caculatePos: function () {
 //		if (!this.map) return;
@@ -140,7 +141,7 @@ _TD.a.push(function (TD) {
 			var fw = new TD.FindWay(
 				this.map.grid_x, this.map.grid_y,
 				this.grid.mx, this.grid.my,
-				this.target.mx, this.target.my,
+				this.target.grid.mx, this.target.grid.my,
 				function (x, y) {
 					return _this.map.checkPassable(x, y);
 				}
@@ -308,6 +309,21 @@ _TD.a.push(function (TD) {
 
 			this.findTaget();//试着去发现目标
 			//if(this.target!=null)alert("fa xian mu biao");
+			this.is_in_attack_range=false;
+			if(this.target){
+					//如果已经在攻击范围内了了就不需要再走动了
+				var cx = this.cx, cy = this.cy,
+					range2 = Math.pow(this.range, 2);
+	
+				// 如果当前建筑有目标，并且目标还是有效的，并且目标仍在射程内
+				if (this.target && this.target.is_valid &&
+					Math.pow(this.target.cx - cx, 2) + Math.pow(this.target.cy - cy, 2) <= range2){
+					//alert("已经在攻击范围内了")
+					this.is_in_attack_range=true;
+				}
+					
+				
+			}
 			this.tryToFire();//试着去开火
 			this.tryToWalk();
 
@@ -318,14 +334,17 @@ _TD.a.push(function (TD) {
 		tryToWalk:function (){
 			
 			
-			
-			if (!this.next_grid) {//如果没有next_grid的话就去取下一个grid
+			if(this.is_in_attack_range&&!this.next_grid){
+				return;
+			}
+				
+			if (!this.next_grid ) {//如果没有next_grid的话就去取下一个grid
 				this.getNextGrid();//在这里寻找可以攻击的目标
-
+			
 				/**
 				 * 如果依旧找不着下一步可去的格子，说明当前怪物被阻塞了
 				 */
-				if (!this.next_grid) {
+				if (!this.next_grid) {//alert("怎么不继续移动了");
 					this.beBlocked();
 					return;
 				}
@@ -404,7 +423,9 @@ _TD.a.push(function (TD) {
 		 * 寻找一个目标（怪物）
 		 */
 		findTaget: function () {
-			if (!this.is_weapon || this.is_pre_building || !this.grid) return;
+			if (!this.is_weapon || this.is_pre_building || !this.grid ) return;
+			
+			
 			//alert("gongjifanwei:"+this.range)
 			var cx = this.cx, cy = this.cy,
 				range2 = Math.pow(this.see_range, 2);
@@ -429,12 +450,14 @@ _TD.a.push(function (TD) {
 				function (obj) {
 					return Math.pow(obj.cx - cx, 2) + Math.pow(obj.cy - cy, 2) <= range2;
 			});
-				//if(this.target)alert("zhao dao jian zu le ")
+			
 		},
 		tryToFire: function () {
+			//如果在攻击距离之内
 			if (!this.is_weapon || !this.target)
 				return;
-
+			if(!this.is_in_attack_range)
+				return;
 			this._fire_wait --;
 			if (this._fire_wait > 0) {//大于零就重新继续等待发射
 //			return;

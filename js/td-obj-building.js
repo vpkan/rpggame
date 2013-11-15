@@ -57,7 +57,7 @@ _TD.a.push(function (TD) {
 			TD.lang.mix(this, o);
 			this.range_px = this.range * TD.grid_size;
 			this.money = this.cost; // 购买、升级本建筑已花费的钱
-			this.life=100;
+			this.life=500;
 			this.color = TD.lang.rndRGB();
 			this.caculatePos();
 		},
@@ -298,7 +298,7 @@ _TD.a.push(function (TD) {
 			if (!this.is_valid) return;
 			this.life = 0;
 			this.is_valid = false;
-
+			this.grid.build_flag = 1;
 //			TD.money += this.money;
 //			building.killed ++;
 
